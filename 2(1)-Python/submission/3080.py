@@ -33,23 +33,14 @@ class Trie(list[TrieNode[T]]):
         """
         # 구현하세요!
         index_at = 0
-        for i in seq:
-            position = self._get_position(i)
+        for element in seq:
+            # 현재 노드의 children에서 element를 가진 노드 탐색
+            child_index = self._find_or_create_child(index_at, element)
+            index_at = child_index  # 다음 노드로 이동
 
-            # Ensure children list is large enough to accommodate position
-            while len(self[index_at].children) <= position:
-                self[index_at].children.append(None)
-
-            # Create new node if needed
-            if self[index_at].children[position] is None:
-                self.append(TrieNode(body=i))
-                self[index_at].children[position] = len(self) - 1
-
-            # Move to the child node
-            index_at = self[index_at].children[position]
-
-        # Mark the end of the sequence
+        # 마지막 노드를 단어의 끝으로 표시
         self[index_at].is_end = True
+
 
     # 구현하세요!
     def count_prefix(self, prefix: Iterable[T]) -> bool:
@@ -64,34 +55,63 @@ class Trie(list[TrieNode[T]]):
         """
         current_index = 0
         for element in prefix:
-            position = self._get_position(element)
-
-            # Ensure children list is large enough to accommodate position
-            if position >= len(self[current_index].children):
-                return False
-
-            # Check if the child node exists
-            if self[current_index].children[position] is None:
-                return False
-
-            current_index = self[current_index].children[position]
+            child_index = self._find_child(current_index, element)
+            if child_index is None:
+                return False  # 현재 prefix가 존재하지 않음
+            current_index = child_index
 
         return True  # Prefix exists
 
-    def _get_position(self, element: T) -> int:
+    def _find_or_create_child(self, parent_index: int, element: T) -> int:
         """
-        Helper method to get the position/index for a given element.
-        This method assumes that the elements are characters (e.g., a-z).
+        Find the child node with the given element or create a new one if it doesn't exist.
 
         Args:
-        - element (T): The element to determine its position.
+            parent_index (int): The index of the parent node.
+            element (T): The element to find or insert.
 
         Returns:
-        - int: The index position in the children array.
+            int: The index of the found or newly created child node.
         """
-        if isinstance(element, str):
-            return ord(element) - ord('a')  # Assuming input is lowercase alphabets
-        raise ValueError("Unsupported element type for position computation")
+        # 부모 노드의 자식 노드 리스트에서 일치하는 body를 가진 노드 탐색
+        for child_index in self[parent_index].children:
+            if self[child_index].body == element:
+                return child_index  # 이미 존재하는 자식 노드 반환
+
+        # 존재하지 않으면 새로운 노드를 생성하고 추가
+        new_node = TrieNode(body=element)
+        self.append(new_node)
+        new_index = len(self) - 1
+        self[parent_index].children.append(new_index)
+        return new_index
+
+    def _find_child(self, parent_index: int, element: T) -> Optional[int]:
+        """
+        Find the child node with the given element.
+
+        Args:
+            parent_index (int): The index of the parent node.
+            element (T): The element to find.
+
+        Returns:
+            Optional[int]: The index of the found child node, or None if it doesn't exist.
+        """
+        # 부모 노드의 자식 노드 리스트에서 일치하는 body를 가진 노드 탐색
+        for child_index in self[parent_index].children:
+            if self[child_index].body == element:
+                return child_index
+        return None  # 일치하는 자식 노드가 없으면 None 반환
+
+
+trie = Trie[str]()
+trie.push("IVO")
+trie.push("JASNA")
+trie.push("JOSIPA")
+
+print(trie.count_prefix("IVO"))  # True 예상
+print(trie.count_prefix("JA"))   # True 예상
+print(trie.count_prefix("JO"))   # True 예상
+
 
 
 import sys
@@ -119,31 +139,33 @@ def main() -> None:
         """
     mod = 1_000_000_007
 
-    # input data handling
-    name_input = sys.stdin.read().strip().split('\n')
+    # 입력 데이터 읽기
+    name_input = sys.stdin.read().strip().split("\n")
+    print("Input Data:", name_input)  # 입력 데이터 확인
     num_word = int(name_input[0])
     name_seq = name_input[1:]
 
-    # make instance of Trie
-    trie: Trie[str] = Trie() # using type annotation
+    # Trie 생성 및 이름 추가
+    trie = Trie[str]()
+    for name in sorted(name_seq):
+        trie.push(name)
 
-    for n in sorted(name_seq):  # 이름을 a to z로 정렬
-        trie.push(n.lower())  # 이름을 Trie에 삽입 (소문자로 통일)
-
-    # DP 테이블 초기화
+    # DP 배열 초기화
     dp = [0] * (num_word + 1)
     dp[0] = 1
 
     # DP 계산
     for i in range(1, num_word + 1):
-        front = name_seq[i - 1].lower()
+        current_name = name_seq[i - 1]
         for j in range(i):
-            if trie.count_prefix(front[:len(name_seq[j])].lower()):
+            prefix_name = name_seq[j]
+            # Trie에서 접두사를 확인하고 current_name이 prefix_name으로 시작하는지 확인
+            if trie.count_prefix(prefix_name) and current_name.startswith(prefix_name):
                 dp[i] = (dp[i] + dp[j]) % mod
+        print(f"dp[{i}] = {dp[i]}")  # DP 배열 값 출력
 
-    # 결과 출력
+    # 최종 결과 출력
     print(dp[num_word])
-
 
 if __name__ == "__main__":
     main()

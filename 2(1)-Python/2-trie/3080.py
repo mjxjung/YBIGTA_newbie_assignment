@@ -24,31 +24,33 @@ def main() -> None:
         """
     mod = 1_000_000_007
 
-    # input data handling
-    name_input = sys.stdin.read().strip().split('\n')
+    # 입력 데이터 읽기
+    name_input = sys.stdin.read().strip().split("\n")
+    print("Input Data:", name_input)  # 입력 데이터 확인
     num_word = int(name_input[0])
     name_seq = name_input[1:]
 
-    # make instance of Trie
-    trie: Trie[str] = Trie() # using type annotation
+    # Trie 생성 및 이름 추가
+    trie = Trie[str]()
+    for name in sorted(name_seq):
+        trie.push(name)
 
-    for n in sorted(name_seq):  # 이름을 a to z로 정렬
-        trie.push(n.lower())  # 이름을 Trie에 삽입 (소문자로 통일)
-
-    # DP 테이블 초기화
+    # DP 배열 초기화
     dp = [0] * (num_word + 1)
     dp[0] = 1
 
     # DP 계산
     for i in range(1, num_word + 1):
-        front = name_seq[i - 1].lower()
+        current_name = name_seq[i - 1]
         for j in range(i):
-            if trie.count_prefix(front[:len(name_seq[j])].lower()):
+            prefix_name = name_seq[j]
+            # Trie에서 접두사를 확인하고 current_name이 prefix_name으로 시작하는지 확인
+            if trie.count_prefix(prefix_name) and current_name.startswith(prefix_name):
                 dp[i] = (dp[i] + dp[j]) % mod
+        print(f"dp[{i}] = {dp[i]}")  # DP 배열 값 출력
 
-    # 결과 출력
+    # 최종 결과 출력
     print(dp[num_word])
-
 
 if __name__ == "__main__":
     main()

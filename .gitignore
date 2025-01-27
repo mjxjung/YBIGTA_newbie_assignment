@@ -169,4 +169,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+# 모든 /DS_STore 파일 무시
 .DS_Store

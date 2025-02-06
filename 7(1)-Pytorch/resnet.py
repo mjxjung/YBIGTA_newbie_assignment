@@ -7,7 +7,7 @@ import os
 from typing import Type, List, Optional
 
 class BasicBlock(nn.Module):
-    expansion: int = 1
+    expansion: int = 1 # 출력한 채널 수의 확장 비율
 
     def __init__(self, in_planes: int, planes: int, stride: int = 1) -> None:
         super(BasicBlock, self).__init__()
@@ -15,12 +15,12 @@ class BasicBlock(nn.Module):
         self.conv1: nn.Conv2d = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride,
                                padding=1, bias=False)
         self.bn1: nn.BatchNorm2d = nn.BatchNorm2d(planes)
-
+        # 첫 번째 리뷰(입력채널, 출력채널, )
         self.conv2: nn.Conv2d = nn.Conv2d(planes, planes, kernel_size=3,
                                stride=1, padding=1, bias=False)
         self.bn2: nn.BatchNorm2d = nn.BatchNorm2d(planes)
-        
-        self.shortcut: nn.Sequential = nn.Sequential()
+        # 두 번째 리뷰(입력채널=출력채널=planes, stride=1로 유지지 )
+        self.shortcut: nn.Sequential = nn.Sequential() # 비어있으므로 아무 연산도 수행하지 않는다.
         if stride != 1 or in_planes != self.expansion * planes:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_planes, self.expansion * planes,
@@ -31,7 +31,13 @@ class BasicBlock(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         
         ## TODO
-        out = None
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = F.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
         
         return out
         

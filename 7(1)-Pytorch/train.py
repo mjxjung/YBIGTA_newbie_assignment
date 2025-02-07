@@ -9,10 +9,20 @@ from config import *
 
 NUM_CLASSES = 10  
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")  
-if device.type == "cuda":
-    print(f"GPU Name: {torch.cuda.get_device_name(0)}")
+if torch.backends.mps.is_available():
+    # mps_device = torch.device("mps")
+    # x = torch.ones(1, device=mps_device)
+    # print (x)
+    device = torch.device("mps")  # macOS MPS 지원
+    print("Using MPS (Apple Metal Performance Shaders) for training")
+else:
+    print ("MPS device not found.")
+
+
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# print(f"Using device: {device}")  
+# if device.type == "cuda":
+#     print(f"GPU Name: {torch.cuda.get_device_name(0)}")
 
 train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(),  # 데이터 증강

@@ -25,16 +25,31 @@ else:
 #     print(f"GPU Name: {torch.cuda.get_device_name(0)}")
 
 train_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(),  # 데이터 증강
     transforms.RandomCrop(32, padding=4),  # 데이터 증강
+    transforms.RandomHorizontalFlip(),  # 데이터 증강
+    # transforms.Resize((224, 224)),
+    # transforms.RandomRotation(15),
+    # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    # transforms.RandomErasing(p=0.5, scale=(0.02, 0.2), ratio=(0.3, 3.3)),
     transforms.ToTensor(),  # 반드시 적용해야 함 (PIL.Image → Tensor)
-    transforms.Normalize((0.5,), (0.5,))  # 정규화
+    transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], 
+                     std=[0.2470, 0.2435, 0.2616])  # 정규화
 ])
 
 test_transform = transforms.Compose([
+    # transforms.Resize((224, 224)),
     transforms.ToTensor(),  # 반드시 적용해야 함
-    transforms.Normalize((0.5,), (0.5,))
+    transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], 
+                     std=[0.2470, 0.2435, 0.2616])
 ])
+
+# # Transform 정의
+# transform = transforms.Compose([
+#     transforms.Resize((224, 224)),  
+#     transforms.ToTensor(),          
+#     transforms.Normalize(mean=[0.491, 0.482, 0.446], 
+#                      std=[0.247, 0.243, 0.261])
+# ])
 
 # CIFAR-10 데이터셋 로드
 train_dataset = datasets.CIFAR10(root="./data", train=True, transform=train_transform, download=True)
@@ -52,7 +67,7 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 model = ResNet(BasicBlock, [2, 2, 2, 2], num_classes=NUM_CLASSES).to(device)
 
 criterion: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
-optimizer: optim.Adam = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=5e-4)
+optimizer: optim.Adam = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
 
 # 학습 
 def train(model: nn.Module, loader: DataLoader, criterion: nn.Module, optimizer: optim.Optimizer, device: torch.device) -> None:

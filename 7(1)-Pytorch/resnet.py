@@ -15,10 +15,12 @@ class BasicBlock(nn.Module):
         self.conv1: nn.Conv2d = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride,
                                padding=1, bias=False)
         self.bn1: nn.BatchNorm2d = nn.BatchNorm2d(planes)
+
         # 첫 번째 리뷰(입력채널, 출력채널, )
         self.conv2: nn.Conv2d = nn.Conv2d(planes, planes, kernel_size=3,
                                stride=1, padding=1, bias=False)
         self.bn2: nn.BatchNorm2d = nn.BatchNorm2d(planes)
+        
         # 두 번째 리뷰(입력채널=출력채널=planes, stride=1로 유지지 )
         self.shortcut: nn.Sequential = nn.Sequential() # 비어있으므로 아무 연산도 수행하지 않는다.
         if stride != 1 or in_planes != self.expansion * planes:
@@ -34,9 +36,6 @@ class BasicBlock(nn.Module):
         out = self.conv1(x)
         out = self.bn1(out)
         out = F.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -60,7 +59,7 @@ class ResNet(nn.Module):
         # 첫번쨰 conv1 layer에서 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
         # 다운샘플링 적용 (max pool)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
@@ -72,6 +71,8 @@ class ResNet(nn.Module):
         
         self.avg_pool: nn.AdaptiveAvgPool2d = nn.AdaptiveAvgPool2d((1, 1))
         self.fc: nn.Linear = nn.Linear(512 * block.expansion, num_classes)
+
+        
 
     def _make_layer(self, block: Type[BasicBlock], out_channels: int, num_blocks: int, stride: int) -> nn.Sequential:
 

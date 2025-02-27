@@ -1,3 +1,0 @@
-[[tool.mypy.overrides]]
-module = ["transformers", "datasets", "sklearn.metrics"]
-ignore_missing_imports = true

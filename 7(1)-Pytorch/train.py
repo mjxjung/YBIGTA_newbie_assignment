@@ -122,6 +122,13 @@ for epoch in range(EPOCHS):
     train(model, train_loader, criterion, optimizer, device)
     evaluate(model, test_loader, criterion, device)
 
+    # # 최고 성능 모델 저장
+    # if best_accuracy < accuracy:
+    #     best_accuracy = accuracy
+    #     torch.save(model.state_dict(), "best_resnet18.pth")
+    #     print("Best model saved!")
+        
+
 # 모델 저장
 torch.save(model.state_dict(), "resnet18_checkpoint.pth")
 print(f"Model saved to resnet18_checkpoint.pth")
